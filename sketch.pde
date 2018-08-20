@@ -13,6 +13,7 @@ PImage crown;
 EState state = EState.SETUP;
 int playernum = 4;
 float unit = 1;
+int unitlevel = 0;
 int initialpoints = 0;
 int mousemovement = 0;
 int current = -1;
@@ -27,7 +28,7 @@ void setup() {
   fullScreen();
   crown  = loadImage("crown.png");
   dateformatter = new SimpleDateFormat("HH:mm");
-  numformatter = new DecimalFormat("0.#");
+  numformatter = new DecimalFormat("0.##");
 }
 
 void draw() {
@@ -99,7 +100,48 @@ void mouseDragged() {
     int change = mousemovement / ((int)(height * 0.05));
     mousemovement = mousemovement % ((int)(height * 0.05));
     if(current == 0) {
-      unit += change;
+      while(change != 0) {
+        int num = (int) (unit / pow(10,unitlevel));
+        if(change < 0) {
+          if(num == 1) {
+            num = 5;
+            unitlevel--;
+          } else if(num == 2) {
+            num = 1;
+          } else if(num == 5) {
+            num = 2;
+          } else {
+            unit = 1;
+            unitlevel = 0;
+          }
+          change++;
+        } else {
+          if(num == 1) {
+            num = 2;
+          } else if(num == 2) {
+            num = 5;
+          } else if(num == 5) {
+            num = 1;
+            unitlevel++;
+          } else {
+            unit = 1;
+            unitlevel = 0;
+          }
+          change--;
+        }
+        unit = num * pow(10,unitlevel);
+        if(unitlevel < -2) {
+          unit = 0.01;
+          unitlevel = -2;
+        }
+        if(unitlevel == -2) {
+          numformatter = new DecimalFormat("0.00");
+        } else if(unitlevel == -1) {
+          numformatter = new DecimalFormat("0.0#");
+        } else {
+          numformatter = new DecimalFormat("0.##");
+        }
+      }
     } else if(current == 1) {
       initialpoints += change;
     } else if(current == 2) {
