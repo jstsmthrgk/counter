@@ -1,3 +1,7 @@
+import java.text.SimpleDateFormat;
+import java.text.DateFormat;
+import java.util.Date;
+
 enum EState {
   SETUP,
   GAME;
@@ -12,19 +16,21 @@ int[] points;
 int[] progress;
 float[] lastknown;
 int common = 0;
+DateFormat dateformatter;
 
 void setup() {
   fullScreen();
   crown  = loadImage("crown.png");
+  dateformatter = new SimpleDateFormat("HH:mm");
 }
 
 void draw() {
-  background(255);
-  fill(0);
-  stroke(0);
-  strokeWeight(4);
-  textAlign(CENTER,CENTER);
   if(state == EState.SETUP){
+    background(255);
+    fill(0);
+    stroke(0);
+    strokeWeight(4);
+    textAlign(CENTER,CENTER);
     line(0,height*0.9,width,height*0.9);
     line(0,height*0.5,width,height*0.5);
     textSize(height*0.1);
@@ -32,6 +38,18 @@ void draw() {
     textSize(height*0.2);
     text(Integer.toString(playernum),width*0.5,height*0.7);
   } else {
+    background(0);
+    fill(255);
+    stroke(255);
+    strokeWeight(0);
+    ellipse(width*0.5,height*0.5,width,width);
+    textAlign(LEFT,TOP);
+    textSize(width*0.1);
+    text(dateformatter.format(new Date()),width*0.02,width*0.02);
+    fill(0);
+    stroke(0);
+    strokeWeight(4);
+    textAlign(CENTER,CENTER);
     textSize(width*0.2);
     translate(width*0.5, height*0.5);
     rotate(PI*1.5);
@@ -76,9 +94,16 @@ void mouseDragged() {
     int x = mouseX - width/2;
     int y = mouseY - height/2;
     float r = sqrt(pow(x,2)+pow(y,2));
+    float phi = atan2(x,y) + PI;
+    float angle = 2 * PI / playernum;
+    phi = phi - angle/2;
     progress[current] += lastknown[current] - r;
     lastknown[current] = r;
-    int change = -progress[current] / (int)(width * 0.025);
+    int change;
+    if (true)
+      change = -progress[current] / (int)(width * 0.025);
+    else
+      change = progress[current] / (int)(width * 0.025);
     progress[current] = progress[current] % (int)(width * 0.025);
     points[current] += change;
     common -= change;
@@ -92,7 +117,7 @@ void mousePressed() {
     int x = mouseX - width/2;
     int y = mouseY - height/2;
     int r = (int) sqrt(pow(x,2)+pow(y,2));
-    if(r < width*0.1){
+    if(r < width*0.1 || r > width*0.5){
       current = -1;
       return;
     }
