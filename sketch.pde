@@ -3,6 +3,7 @@ enum EState {
   GAME;
 }
 
+PImage crown;
 EState state = EState.SETUP;
 int playernum = 4;
 int mousemovement = 0;
@@ -14,6 +15,7 @@ int common = 0;
 
 void setup() {
   fullScreen();
+  crown  = loadImage("crown.png");
 }
 
 void draw() {
@@ -38,9 +40,24 @@ void draw() {
     textSize(width*0.1);
     float angle = 2 * PI / playernum;
     rotate(PI);
+    int bestnum = Integer.MIN_VALUE;
+    int bestpl = -1;
+    boolean justone = false;
     for(int p = 0; p < playernum; p++){
+      if (points[p] > bestnum) {
+        bestnum = points[p];
+        bestpl = p;
+        justone = true;
+      } else if (points[p] == bestnum) {
+        justone = false;
+      }
       text(Integer.toString(points[p]),0,width*0.4);
       rotate(angle);
+    }
+    if(bestpl != -1 && justone) {
+      rotate(bestpl * angle);
+      imageMode(CENTER);
+      image(crown, 0, width*0.25, width*0.15, width*0.15);
     }
   }
 }
