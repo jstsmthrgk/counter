@@ -134,12 +134,12 @@ void mouseDragged() {
           unit = 0.01;
           unitlevel = -2;
         }
-        if(unitlevel == -2) {
-          numformatter = new DecimalFormat("0.00");
-        } else if(unitlevel == -1) {
-          numformatter = new DecimalFormat("0.0#");
+        if(unitlevel < 0) {
+          numformatter.setMinimumFractionDigits(-unitlevel);
+          numformatter.setMaximumFractionDigits(-unitlevel);
         } else {
-          numformatter = new DecimalFormat("0.##");
+          numformatter.setMinimumFractionDigits(0);
+          numformatter.setMaximumFractionDigits(0);
         }
       }
     } else if(current == 1) {
