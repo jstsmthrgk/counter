@@ -3,14 +3,17 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Date;
+import java.nio.ByteBuffer;
+import android.content.Context;
 
 enum EState {
+  START,
   SETUP,
   GAME;
 }
 
 PImage crown;
-EState state = EState.SETUP;
+EState state = EState.START;
 int playernum = 4;
 float unit = 1;
 int unitlevel = 0;
@@ -18,21 +21,35 @@ int initialpoints = 0;
 int mousemovement = 0;
 int current = -1;
 int[] points;
-int[] progress;
-float[] lastknown;
+int progress = 0;
+float lastknown;
 int common = 0;
 DateFormat dateformatter;
 NumberFormat numformatter;
+Context context;
+String savefile;
 
 void setup() {
   fullScreen();
   crown  = loadImage("crown.png");
   dateformatter = new SimpleDateFormat("HH:mm");
   numformatter = new DecimalFormat("0.##");
+  context = getContext();
+  savefile = context.getFilesDir().getAbsolutePath() + "/savegame.bin";
 }
 
 void draw() {
-  if(state == EState.SETUP){
+  if(state == EState.START){
+    background(255);
+    fill(0);
+    stroke(0);
+    strokeWeight(4);
+    textSize(height*0.1);
+    textAlign(CENTER,CENTER);
+    line(0,height*0.5,width,height*0.5);
+    text("Continue",width*0.5,height*0.25);
+    text("New Game",width*0.5,height*0.75);
+  } else if(state == EState.SETUP){
     background(255);
     fill(0);
     stroke(0);
@@ -89,7 +106,7 @@ void draw() {
     if(bestpl != -1 && justone) {
       rotate(bestpl * angle);
       imageMode(CENTER);
-      image(crown, 0, width*0.25, width*0.15, width*0.15);
+      image(crown, 0, width*0.3, width*0.15, width*0.1);
     }
   }
 }
@@ -150,29 +167,36 @@ void mouseDragged() {
         playernum = 2;
       }
     }
-  } else {
+  } else if(state == EState.GAME) {
     if ( current == -1 )
       return;
     int x = mouseX - width/2;
     int y = mouseY - height/2;
     float angle = 2 * PI / playernum;
     float pos = x * sin(angle*current) - y * cos(angle*current);
-    progress[current] += lastknown[current] - pos;
-    lastknown[current] = pos;
+    progress += lastknown - pos;
+    lastknown = pos;
     int change;
     if (true)
-      change = -progress[current] / (int)(width * 0.025);
+      change = -progress / (int)(width * 0.025);
     else
-      change = progress[current] / (int)(width * 0.025);
-    progress[current] = progress[current] % (int)(width * 0.025);
+      change = progress / (int)(width * 0.025);
+    progress = progress % (int)(width * 0.025);
     points[current] += change;
     common -= change;
   }
 }
 
 void mousePressed() {
-  if(state == EState.SETUP) {
+  if(state == EState.START) {
+    if(mouseY < height*0.5) {
+      current = 0;
+    } else {
+      current = 1;
+    }
+  }else if(state == EState.SETUP) {
     if(mouseY < height*0.3) {
+      current = -1;
     } else if(mouseY < height*0.5) {
       current = 0;
     } else if(mouseY < height*0.7) {
@@ -197,27 +221,62 @@ void mousePressed() {
     phi = ( phi + 2 * PI ) % ( 2* PI );
     current = playernum - (int) (phi / angle) - 1;
     float pos = x * sin(angle*current) - y * cos(angle*current);
-    lastknown[current] = pos;
+    lastknown = pos;
+    progress = 0;
   }
 }
 
 void mouseReleased() {
-  if(state == EState.SETUP){
+  if(state == EState.START){
+    if(current == 0){
+      loadGame();
+      state = EState.GAME;
+    } else {
+      state = EState.SETUP;
+    }
+  } else if(state == EState.SETUP){
     if(current == 3) {
       state = EState.GAME;
       points = new int[playernum];
-      progress = new int[playernum];
-      lastknown = new float[playernum];
       current = -1;
       for(int p = 0; p < playernum; p++){
         points[p] = initialpoints;
-        progress[p] = 0;
       }
     }
     mousemovement = 0;
   } else {
-    for(int p = 0; p < playernum; p++){
-      progress[p] = 0;
-    }
+    saveGame();
+  }
+}
+
+void saveGame(){
+  ByteBuffer data = ByteBuffer.allocate(4*(4+playernum));
+  data.putFloat(unit);
+  data.putInt(unitlevel);
+  data.putInt(playernum);
+  data.putInt(common);
+  for(int i = 0; i < playernum; i++) {
+    data.putInt(points[i]);
+  }
+  saveBytes(savefile,data.array());
+}
+
+void loadGame(){
+  byte[] databytes = loadBytes(savefile);
+  ByteBuffer data = ByteBuffer.wrap(databytes);
+  unit = data.getFloat();
+  unitlevel = data.getInt();
+  if(unitlevel < 0) {
+    numformatter.setMinimumFractionDigits(-unitlevel);
+    numformatter.setMaximumFractionDigits(-unitlevel);
+  } else {
+    numformatter.setMinimumFractionDigits(0);
+    numformatter.setMaximumFractionDigits(0);
+  }
+  playernum = data.getInt();
+  common = data.getInt();
+  points = new int[playernum];
+  for(int i = 0; i < playernum; i++) {
+    points[i] = data.getInt();
   }
 }
