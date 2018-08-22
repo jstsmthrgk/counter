@@ -114,8 +114,14 @@ void draw() {
 void mouseDragged() {
   if(state == EState.SETUP){
     mousemovement += mouseX - pmouseX;
-    int change = mousemovement / ((int)(height * 0.05));
-    mousemovement = mousemovement % ((int)(height * 0.05));
+    int change;
+    if(current == 1) {
+      change = mousemovement / ((int)(width * 0.025));
+      mousemovement = mousemovement % ((int)(width * 0.025));
+    } else {
+      change = mousemovement / ((int)(width * 0.1));
+      mousemovement = mousemovement % ((int)(width * 0.1));
+    }
     if(current == 0) {
       while(change != 0) {
         int num = (int) (unit / pow(10,unitlevel));
@@ -211,7 +217,7 @@ void mousePressed() {
     int x = mouseX - width/2;
     int y = mouseY - height/2;
     int r = (int) sqrt(pow(x,2)+pow(y,2));
-    if(r < width*0.1 || r > width*0.5){
+    if(r < width*0.025 || r > width*0.5){
       current = -1;
       return;
     }
