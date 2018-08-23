@@ -9,10 +9,12 @@ import android.content.Context;
 enum EState {
   START,
   SETUP,
-  GAME;
+  GAME,
+  INFO;
 }
 
 PImage crown;
+PImage info;
 EState state = EState.START;
 int playernum = 4;
 float unit = 1;
@@ -28,14 +30,22 @@ DateFormat dateformatter;
 NumberFormat numformatter;
 Context context;
 String savefile;
+int scroll;
+String infotext = "narerprpr r nhps k k k k hg n k k  gg n n nh n n n n n n nn n n s k s k k k k wk ";
 
 void setup() {
   fullScreen();
-  crown  = loadImage("crown.png");
+  crown = loadImage("crown.png");
+  info = loadImage("info.png");
   dateformatter = new SimpleDateFormat("HH:mm");
   numformatter = new DecimalFormat("0.##");
   context = getContext();
   savefile = context.getFilesDir().getAbsolutePath() + "/savegame.bin";
+  scroll = (int) (-width*0.05);
+  infotext = "";
+  for(String line : loadStrings("info.txt")) {
+    infotext += line + "\n";
+  }
 }
 
 void draw() {
@@ -49,6 +59,7 @@ void draw() {
     line(0,height*0.5,width,height*0.5);
     text("Continue",width*0.5,height*0.25);
     text("New Game",width*0.5,height*0.75);
+    image(info, width*0.85, 0, width*0.15, width*0.15);
   } else if(state == EState.SETUP){
     background(255);
     fill(0);
@@ -70,7 +81,7 @@ void draw() {
     text("Unit",width*0.1,height*0.4);
     text("Initial",width*0.1,height*0.6);
     text("Players",width*0.1,height*0.8);
-  } else {
+  } else if(state == EState.GAME) {
     background(0);
     fill(255);
     stroke(255);
@@ -108,6 +119,23 @@ void draw() {
       imageMode(CENTER);
       image(crown, 0, width*0.3, width*0.15, width*0.1);
     }
+  } else if(state == EState.INFO) {
+    background(255);
+    stroke(0);
+    fill(0);
+    textSize(width*0.03);
+    textAlign(LEFT,TOP);
+    text(infotext, width*0.05, 0-scroll, width*0.9, height+scroll);
+    stroke(255);
+    fill(255);
+    rect(0,height*0.9,width,height*0.1);
+    stroke(0);
+    fill(0);
+    strokeWeight(4);
+    line(0,height*0.9,width,height*0.9);
+    textAlign(CENTER,CENTER);
+    textSize(height*0.075);
+    text("Back",width*0.5,height*0.95);
   }
 }
 
@@ -190,12 +218,19 @@ void mouseDragged() {
     progress = progress % (int)(width * 0.025);
     points[current] += change;
     common -= change;
+  } else if(state == EState.INFO) {
+    if(current == 0)
+      scroll -= mouseY - pmouseY;
+    if(scroll < (int) (-width*0.05))
+      scroll = (int) (-width*0.05);
   }
 }
 
 void mousePressed() {
   if(state == EState.START) {
-    if(mouseY < height*0.5) {
+    if(mouseY < width*0.15 && mouseX > width*0.85) {
+      current = 2;
+    } else if(mouseY < height*0.5) {
       current = 0;
     } else {
       current = 1;
@@ -213,7 +248,7 @@ void mousePressed() {
       current = 3;
     }
     mousemovement = 0;
-  } else {
+  } else if(state == EState.GAME) {
     int x = mouseX - width/2;
     int y = mouseY - height/2;
     int r = (int) sqrt(pow(x,2)+pow(y,2));
@@ -229,6 +264,12 @@ void mousePressed() {
     float pos = x * sin(angle*current) - y * cos(angle*current);
     lastknown = pos;
     progress = 0;
+  } else if(state == EState.INFO) {
+    if(mouseY > height*0.9) {
+      current = 1;
+    } else {
+      current = 0;
+    }
   }
 }
 
@@ -237,8 +278,10 @@ void mouseReleased() {
     if(current == 0){
       loadGame();
       state = EState.GAME;
-    } else {
+    } else if(current == 1) {
       state = EState.SETUP;
+    } else {
+      state = EState.INFO;
     }
   } else if(state == EState.SETUP){
     if(current == 3) {
@@ -250,8 +293,11 @@ void mouseReleased() {
       }
     }
     mousemovement = 0;
-  } else {
+  } else if(state == EState.GAME) {
     saveGame();
+  } else if(state == EState.INFO) {
+    if(current == 1)
+      state = EState.START;
   }
 }
 
