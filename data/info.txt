@@ -5,7 +5,7 @@ Game Counter allows you to keep track of points during a game.
 The following options are aviable when starting a new game:
 
  - Unit: All points will always be a multiple of this value, it also sets the number of decimal digits displayed.
- - Initial: How much points each player has at the start of the game.
+ - Initial: How many points each player has at the start of the game.
  - Players: The number of players.
  
  
