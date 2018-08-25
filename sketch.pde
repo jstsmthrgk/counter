@@ -13,8 +13,7 @@ enum EState {
   INFO;
 }
 
-PImage crown;
-PImage info;
+PImage crown, info, plus, minus;
 EState state = EState.START;
 int playernum = 4;
 float unit = 1;
@@ -31,12 +30,16 @@ NumberFormat numformatter;
 Context context;
 String savefile;
 int scroll;
-String infotext = "narerprpr r nhps k k k k hg n k k  gg n n nh n n n n n n nn n n s k s k k k k wk ";
+String infotext;
+int direction = 0;
+int untilnext = 0;
 
 void setup() {
   fullScreen();
   crown = loadImage("crown.png");
   info = loadImage("info.png");
+  plus = loadImage("plus.png");
+  minus = loadImage("minus.png");
   dateformatter = new SimpleDateFormat("HH:mm");
   numformatter = new DecimalFormat("0.##");
   context = getContext();
@@ -66,6 +69,13 @@ void draw() {
     stroke(0);
     strokeWeight(4);
     textAlign(CENTER,CENTER);
+    imageMode(CENTER);
+    image(plus,width*0.9,height*0.4,width*0.05,width*0.05);
+    image(minus,width*0.6,height*0.4,width*0.05,width*0.05);
+    image(plus,width*0.9,height*0.6,width*0.05,width*0.05);
+    image(minus,width*0.6,height*0.6,width*0.05,width*0.05);
+    image(plus,width*0.9,height*0.8,width*0.05,width*0.05);
+    image(minus,width*0.6,height*0.8,width*0.05,width*0.05);
     line(0,height*0.3,width,height*0.3);
     line(0,height*0.5,width,height*0.5);
     line(0,height*0.7,width,height*0.7);
@@ -81,6 +91,10 @@ void draw() {
     text("Unit",width*0.1,height*0.4);
     text("Initial",width*0.1,height*0.6);
     text("Players",width*0.1,height*0.8);
+    if(direction != 0 && untilnext == 0) {
+      setupChange();
+    }
+    untilnext--;
   } else if(state == EState.GAME) {
     background(0);
     fill(255);
@@ -104,6 +118,9 @@ void draw() {
     int bestpl = -1;
     boolean justone = false;
     for(int p = 0; p < playernum; p++){
+      imageMode(CENTER);
+      image(plus,width*0.1,width*0.4,width*0.05,width*0.05);
+      image(minus,-width*0.1,width*0.4,width*0.05,width*0.05);
       if (points[p] > bestnum) {
         bestnum = points[p];
         bestpl = p;
@@ -119,6 +136,12 @@ void draw() {
       imageMode(CENTER);
       image(crown, 0, width*0.3, width*0.15, width*0.1);
     }
+    if(direction != 0 && untilnext == 0) {
+      points[current] += direction;
+      common -= direction;
+      untilnext = 2;
+    }
+    untilnext--;
   } else if(state == EState.INFO) {
     background(255);
     stroke(0);
@@ -139,86 +162,64 @@ void draw() {
   }
 }
 
+void setupChange() {
+  if(current == 0) {
+      int num = (int) (unit / pow(10,unitlevel));
+      if(direction < 0) {
+        if(num == 1) {
+          num = 5;
+          unitlevel--;
+        } else if(num == 2) {
+          num = 1;
+        } else if(num == 5) {
+          num = 2;
+        } else {
+          unit = 1;
+          unitlevel = 0;
+        }
+      } else {
+        if(num == 1) {
+          num = 2;
+        } else if(num == 2) {
+          num = 5;
+        } else if(num == 5) {
+          num = 1;
+          unitlevel++;
+        } else {
+          unit = 1;
+          unitlevel = 0;
+        }
+      }
+      unit = num * pow(10,unitlevel);
+      if(unitlevel < -2) {
+        unit = 0.01;
+        unitlevel = -2;
+      } else if(unit > 1000) {
+        unit = 1000;
+        unitlevel = 3;
+      }
+      if(unitlevel < 0) {
+        numformatter.setMinimumFractionDigits(-unitlevel);
+        numformatter.setMaximumFractionDigits(-unitlevel);
+      } else {
+        numformatter.setMinimumFractionDigits(0);
+        numformatter.setMaximumFractionDigits(0);
+      }
+  } else if(current == 1) {
+    initialpoints += direction;
+  } else if(current == 2) {
+    playernum += direction;
+    if (playernum < 2){
+      playernum = 2;
+    } else if(playernum > 8) {
+      playernum = 8;
+    }
+  }
+  untilnext = current == 1 ? 2 : 10 ;
+}
+
 void mouseDragged() {
-  if(state == EState.SETUP){
-    mousemovement += mouseX - pmouseX;
-    int change;
-    if(current == 1) {
-      change = mousemovement / ((int)(width * 0.025));
-      mousemovement = mousemovement % ((int)(width * 0.025));
-    } else {
-      change = mousemovement / ((int)(width * 0.1));
-      mousemovement = mousemovement % ((int)(width * 0.1));
-    }
-    if(current == 0) {
-      while(change != 0) {
-        int num = (int) (unit / pow(10,unitlevel));
-        if(change < 0) {
-          if(num == 1) {
-            num = 5;
-            unitlevel--;
-          } else if(num == 2) {
-            num = 1;
-          } else if(num == 5) {
-            num = 2;
-          } else {
-            unit = 1;
-            unitlevel = 0;
-          }
-          change++;
-        } else {
-          if(num == 1) {
-            num = 2;
-          } else if(num == 2) {
-            num = 5;
-          } else if(num == 5) {
-            num = 1;
-            unitlevel++;
-          } else {
-            unit = 1;
-            unitlevel = 0;
-          }
-          change--;
-        }
-        unit = num * pow(10,unitlevel);
-        if(unitlevel < -2) {
-          unit = 0.01;
-          unitlevel = -2;
-        }
-        if(unitlevel < 0) {
-          numformatter.setMinimumFractionDigits(-unitlevel);
-          numformatter.setMaximumFractionDigits(-unitlevel);
-        } else {
-          numformatter.setMinimumFractionDigits(0);
-          numformatter.setMaximumFractionDigits(0);
-        }
-      }
-    } else if(current == 1) {
-      initialpoints += change;
-    } else if(current == 2) {
-      playernum += change;
-      if (playernum < 2){
-        playernum = 2;
-      }
-    }
-  } else if(state == EState.GAME) {
-    if ( current == -1 )
-      return;
-    int x = mouseX - width/2;
-    int y = mouseY - height/2;
-    float angle = 2 * PI / playernum;
-    float pos = x * sin(angle*current) - y * cos(angle*current);
-    progress += lastknown - pos;
-    lastknown = pos;
-    int change;
-    if (true)
-      change = -progress / (int)(width * 0.025);
-    else
-      change = progress / (int)(width * 0.025);
-    progress = progress % (int)(width * 0.025);
-    points[current] += change;
-    common -= change;
-  } else if(state == EState.INFO) {
+  if(state == EState.INFO) {
     if(current == 0)
       scroll -= mouseY - pmouseY;
     if(scroll < (int) (-width*0.05))
@@ -247,7 +248,11 @@ void mousePressed() {
     } else {
       current = 3;
     }
-    mousemovement = 0;
+    if(current != -1) {
+      direction = mouseX < width*0.75 ? -1 : 1 ;
+      setupChange();
+      untilnext = 20;
+    }
   } else if(state == EState.GAME) {
     int x = mouseX - width/2;
     int y = mouseY - height/2;
@@ -261,9 +266,10 @@ void mousePressed() {
     phi = phi - angle/2;
     phi = ( phi + 2 * PI ) % ( 2* PI );
     current = playernum - (int) (phi / angle) - 1;
-    float pos = x * sin(angle*current) - y * cos(angle*current);
-    lastknown = pos;
-    progress = 0;
+    direction = (int) (phi / (angle * 0.5)) % 2 != 0 ? 1 : -1 ;
+    points[current] += direction;
+    common -= direction;
+    untilnext = 20;
   } else if(state == EState.INFO) {
     if(mouseY > height*0.9) {
       current = 1;
@@ -299,6 +305,7 @@ void mouseReleased() {
     if(current == 1)
       state = EState.START;
   }
+  direction = 0;
 }
 
 void saveGame(){

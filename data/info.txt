@@ -1,7 +1,6 @@
 GAME COUNTER
 
 Game Counter allows you to keep track of points during a game.
-Using it is simple: just swipe from the number representing the points of a player to the middle to transer them there or swipe away to transfer them to the player.
 
 The following options are aviable when starting a new game:
 
@@ -9,10 +8,8 @@ The following options are aviable when starting a new game:
  - Initial: How much points each player has at the start of the game.
  - Players: The number of players.
  
- The values of these options are set by swiping right to increase and swiping left to decrease.
-
-
-
+ 
+ 
 
 
 This program is free software: you can redistribute it and/or modify
