@@ -13,7 +13,7 @@ enum EState {
   INFO;
 }
 
-PImage crown, info, plus, minus;
+PImage crown, info, plus, minus, back, iclose, pause;
 EState state = EState.START;
 int playernum = 4;
 float unit = 1;
@@ -40,6 +40,9 @@ void setup() {
   info = loadImage("info.png");
   plus = loadImage("plus.png");
   minus = loadImage("minus.png");
+  back = loadImage("back.png");
+  iclose = loadImage("close.png");
+  pause = loadImage("pause.png");
   dateformatter = new SimpleDateFormat("HH:mm");
   numformatter = new DecimalFormat("0.##");
   context = getContext();
@@ -56,41 +59,45 @@ void draw() {
     background(255);
     fill(0);
     stroke(0);
-    strokeWeight(4);
-    textSize(height*0.1);
+    strokeWeight(1);
+    textSize(width*0.1);
     textAlign(CENTER,CENTER);
     line(0,height*0.5,width,height*0.5);
     text("Continue",width*0.5,height*0.25);
     text("New Game",width*0.5,height*0.75);
+    imageMode(CORNER);
     image(info, width*0.85, 0, width*0.15, width*0.15);
+    image(iclose, 0, 0, width*0.15, width*0.15);
   } else if(state == EState.SETUP){
     background(255);
     fill(0);
     stroke(0);
-    strokeWeight(4);
+    strokeWeight(1);
     textAlign(CENTER,CENTER);
     imageMode(CENTER);
-    image(plus,width*0.9,height*0.4,width*0.05,width*0.05);
-    image(minus,width*0.6,height*0.4,width*0.05,width*0.05);
-    image(plus,width*0.9,height*0.6,width*0.05,width*0.05);
-    image(minus,width*0.6,height*0.6,width*0.05,width*0.05);
-    image(plus,width*0.9,height*0.8,width*0.05,width*0.05);
-    image(minus,width*0.6,height*0.8,width*0.05,width*0.05);
+    image(plus,width*0.75,height*0.35,width*0.025,width*0.025);
+    image(minus,width*0.75,height*0.45,width*0.025,width*0.025);
+    image(plus,width*0.75,height*0.55,width*0.025,width*0.025);
+    image(minus,width*0.75,height*0.65,width*0.025,width*0.025);
+    image(plus,width*0.75,height*0.75,width*0.025,width*0.025);
+    image(minus,width*0.75,height*0.85,width*0.025,width*0.025);
     line(0,height*0.3,width,height*0.3);
     line(0,height*0.5,width,height*0.5);
     line(0,height*0.7,width,height*0.7);
     line(0,height*0.9,width,height*0.9);
     textSize(height*0.1);
     text("New Game",width*0.5,height*0.15);
+    textSize(width*0.1);
     text(numformatter.format(unit),width*0.75,height*0.4);
     text(numformatter.format(initialpoints*unit),width*0.75,height*0.6);
     text(Integer.toString(playernum),width*0.75,height*0.8);
-    textSize(height*0.075);
     text("Start",width*0.5,height*0.95);
     textAlign(LEFT,CENTER);
     text("Unit",width*0.1,height*0.4);
     text("Initial",width*0.1,height*0.6);
     text("Players",width*0.1,height*0.8);
+    imageMode(CORNER);
+    image(back, 0, 0, width*0.15, width*0.15);
     if(direction != 0 && untilnext == 0) {
       setupChange();
     }
@@ -101,17 +108,18 @@ void draw() {
     stroke(255);
     strokeWeight(0);
     ellipse(width*0.5,height*0.5,width,width);
-    textAlign(LEFT,TOP);
+    ellipse(width*0.5,height*0.5,width*0.3,width*0.3);
+    textAlign(RIGHT,TOP);
     textSize(width*0.1);
-    text(dateformatter.format(new Date()),width*0.02,width*0.02);
+    text(dateformatter.format(new Date()),width*0.98,width*0.02);
+    imageMode(CORNER);
+    image(pause, 0, 0, width*0.15, width*0.15);
     fill(0);
     stroke(0);
-    strokeWeight(4);
+    strokeWeight(1);
     textAlign(CENTER,CENTER);
-    textSize(width*0.2);
     translate(width*0.5, height*0.5);
     text(numformatter.format(common*unit),0,0);
-    textSize(width*0.1);
     float angle = 2 * PI / playernum;
     rotate(PI);
     int bestnum = Integer.MIN_VALUE;
@@ -119,8 +127,8 @@ void draw() {
     boolean justone = false;
     for(int p = 0; p < playernum; p++){
       imageMode(CENTER);
-      image(plus,width*0.1,width*0.4,width*0.05,width*0.05);
-      image(minus,-width*0.1,width*0.4,width*0.05,width*0.05);
+      image(plus,0,width*0.25,width*0.025,width*0.025);
+      image(minus,0,width*0.45,width*0.025,width*0.025);
       if (points[p] > bestnum) {
         bestnum = points[p];
         bestpl = p;
@@ -128,13 +136,13 @@ void draw() {
       } else if (points[p] == bestnum) {
         justone = false;
       }
-      text(numformatter.format(points[p]*unit),0,width*0.4);
+      text(numformatter.format(points[p]*unit),0,width*0.35);
       rotate(angle);
     }
     if(bestpl != -1 && justone) {
       rotate(bestpl * angle);
       imageMode(CENTER);
-      image(crown, 0, width*0.3, width*0.15, width*0.1);
+      image(crown, 0, width*0.2, width*0.15, width*0.1);
     }
     if(direction != 0 && untilnext == 0) {
       points[current] += direction;
@@ -154,10 +162,10 @@ void draw() {
     rect(0,height*0.9,width,height*0.1);
     stroke(0);
     fill(0);
-    strokeWeight(4);
+    strokeWeight(1);
     line(0,height*0.9,width,height*0.9);
     textAlign(CENTER,CENTER);
-    textSize(height*0.075);
+    textSize(width*0.1);
     text("Back",width*0.5,height*0.95);
   }
 }
@@ -194,9 +202,9 @@ void setupChange() {
       if(unitlevel < -2) {
         unit = 0.01;
         unitlevel = -2;
-      } else if(unit > 1000) {
-        unit = 1000;
-        unitlevel = 3;
+      } else if(unit > 100) {
+        unit = 100;
+        unitlevel = 2;
       }
       if(unitlevel < 0) {
         numformatter.setMinimumFractionDigits(-unitlevel);
@@ -228,6 +236,11 @@ void mouseDragged() {
 }
 
 void mousePressed() {
+  if(mouseY < width*0.5 && mouseX < width*0.5) {
+    current = -2;
+    direction = 0;
+    return;
+  }
   if(state == EState.START) {
     if(mouseY < width*0.15 && mouseX > width*0.85) {
       current = 2;
@@ -249,7 +262,7 @@ void mousePressed() {
       current = 3;
     }
     if(current != -1) {
-      direction = mouseX < width*0.75 ? -1 : 1 ;
+      direction = (mouseY % (height*0.2)) < height*0.1 ? -1 : 1 ;
       setupChange();
       untilnext = 20;
     }
@@ -257,7 +270,7 @@ void mousePressed() {
     int x = mouseX - width/2;
     int y = mouseY - height/2;
     int r = (int) sqrt(pow(x,2)+pow(y,2));
-    if(r < width*0.025 || r > width*0.5){
+    if(r < width*0.15 || r > width*0.5){
       current = -1;
       return;
     }
@@ -266,7 +279,7 @@ void mousePressed() {
     phi = phi - angle/2;
     phi = ( phi + 2 * PI ) % ( 2* PI );
     current = playernum - (int) (phi / angle) - 1;
-    direction = (int) (phi / (angle * 0.5)) % 2 != 0 ? 1 : -1 ;
+    direction = r < width*0.35 ? 1 : -1 ;
     points[current] += direction;
     common -= direction;
     untilnext = 20;
@@ -280,6 +293,14 @@ void mousePressed() {
 }
 
 void mouseReleased() {
+  if(current == -2) {
+    if(state == EState.START) {
+      System.exit(0);
+    } else {
+      state = EState.START;
+    }
+    return;
+  }
   if(state == EState.START){
     if(current == 0){
       loadGame();
